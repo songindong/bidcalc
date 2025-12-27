@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>경매비용 계산기</title>
+  <style>
+    body{font-family:'Noto Sans KR','Malgun Gothic',Arial,sans-serif;background:#f0f4f8;margin:0;padding-top:20px}
+    .header{background:#ffffff;padding:10px 0;text-align:center;line-height:1.2;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+    .header-title{font-weight:700;font-size:20px;color:#f97316}
+    .header-sub{font-size:16px;color:#475569;display:block;margin-top:4px}
+    .box{background:#fff;max-width:600px;margin:20px auto;padding:20px;border-radius:14px;box-shadow:0 4px 14px rgba(0,0,0,.1)}
+    h2{text-align:center;color:#1e3a8a;font-size:26px;margin-top:0}
+    label{display:block;margin-top:14px;font-weight:600}
+    input,button{width:100%;margin-top:10px;padding:14px;border-radius:10px;border:1px solid #cbd5e1;font-size:16px;box-sizing:border-box}
+    button{cursor:pointer;border:none}
+    #calcBtn{background:#2563eb;color:#fff}
+    table{width:100%;margin-top:20px;border-collapse:collapse}
+    td{padding:10px;border-bottom:1px solid #e5e7eb}
+    .subtotal td{font-weight:700;font-size:17px;background:#eef2ff}
+    .total td{font-size:28px;font-weight:800;background:#e0f2fe}
+
+    /* 그룹별 색상 구분 */
+    .group-apply td{background:#fef3c7}
+    .group-appraisal td{background:#dbeafe}
+    .group-deposit td{background:#d1fae5}
+
+    .law{margin-top:25px}
+    .law-btn{background:#e5e7eb;color:#111;font-weight:600;margin-top:10px}
+    .law-content{display:none;padding:12px;background:#f8fafc;border-radius:8px;font-size:14px;line-height:1.6}
+    .footer-note{margin-top:20px;font-size:12px;color:#6b7280;text-align:center;line-height:1.4}
+
+    /* 모바일 폰트 보정 */
+    @media(max-width:480px){
+      .subtotal td{font-size:16px}
+      .total td{font-size:22px}
+      td{padding:8px;font-size:14px}
+    }
+  </style>
+</head>
+<body>
+<div class="header">
+  <span class="header-title">자유로 경매NPL</span>
+  <span class="header-sub">031) 718-1233  (분당 오리역 3번출구)</span>
+</div>
+<div class="box">
+    <h2>경매비용 계산기</h2>
+<label>낙찰가 (만원)</label>
+<input id="price" placeholder="예: 15,000" inputmode="numeric" />
+<label>이해관계자 수</label>
+<input id="people" type="number" value="0" />
+<label>목적물 수</label>
+<input id="objects" type="number" value="1" />
+<button id="calcBtn">계산하기</button>
+<table id="result"></table>
+
+<div class="law">
+  <h3>법적 근거</h3>
+
+  <button class="law-btn" onclick="toggleLaw('lawDelivery')">송달료</button>
+  <div id="lawDelivery" class="law-content">
+    (이해관계인 수 + 3) × 10회분 × 5,500원
+  </div>
+
+  <button class="law-btn" onclick="toggleLaw('lawRegistry')">등기신청수수료</button>
+  <div id="lawRegistry" class="law-content">
+    경매개시결정등기기입과 말소등기 시 매 목적물 마다 4,000원
+  </div>
+
+  <button class="law-btn" onclick="toggleLaw('law5')">매각수수료</button>
+  <div id="law5" class="law-content">
+    「민사집행규칙」 제127조 및 대법원 예규 「부동산경매 매각수수료 산정기준」에 따른 누진요율<br/>
+    - 10만 원 이하 : 5,000원<br/>
+    - 10만 원 초과 ~ 1,000만 원 이하 : (기준금액-10만원) × 0.02 + 5,000원<br/>
+    - 1,000만 원 초과 ~ 5,000만 원 이하 : (기준금액-1천만원) × 0.015 + 203,000원<br/>
+    - 5,000만 원 초과 ~ 1억 원 이하 : (기준금액-5천만원) × 0.01 + 803,000원<br/>
+    - 1억 원 초과 ~ 3억 원 이하 : (기준금액-1억원) × 0.005 + 1,303,000원<br/>
+    - 3억 원 초과 ~ 5억 원 이하 : (기준금액-3억원) × 0.003 + 2,303,000원<br/>
+    - 5억 원 초과 ~ 10억 원 이하 : (기준금액-5억원) × 0.002 + 2,903,000원<br/>
+    - 10억 원 초과 : 3,903,000원
+  </div>
+</div>
+
+<div class="footer-note">
+  본 계산기는 실제 경매비용 산정을 위한 정확한 도구가 아니며, 경매비용을 참고용으로 예상해 보는 용도로만 활용하시기 바랍니다.
+</div>
+
+<script>
+function toggleLaw(id){
+  const el=document.getElementById(id);
+  el.style.display=el.style.display==='block'?'none':'block';
+}
+
+function comma(x){return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+
+function calcAppraisal(total){
+  let fee=0;
+  let expense=0;
+
+  if(total<=197727272){
+    fee=290000;
+    expense=48000;
+  }else if(total<=200000000){
+    fee=(200000+(total-50000000)*11/10000)*0.8;
+    expense=48000;
+  }else if(total<=500000000){
+    fee=(200000+(total-50000000)*11/10000)*0.8;
+    expense=88000;
+  }else if(total<=1000000000){
+    fee=(695000+(total-500000000)*9/10000)*0.8;
+    expense=88000;
+  }else if(total<=5000000000){
+    fee=(1145000+(total-1000000000)*8/10000)*0.8;
+    expense=88000;
+  }else if(total<=10000000000){
+    fee=(4345000+(total-5000000000)*7/10000)*0.8;
+    expense=88000;
+  }else if(total<=11925000000){
+    fee=(7845000+(total-10000000000)*6/10000)*0.8;
+    expense=88000;
+  }else{
+    fee=7200000;
+    expense=88000;
+  }
+
+  fee=Math.round(fee);
+  const vat=Math.round((fee+expense)*0.1);
+  return {fee,expense,vat,sum:fee+expense+vat};
+}
+
+function calcAuctionFee(total){
+  if(total<=100000) return 5000;
+  if(total<=10000000) return Math.round((total-100000)*0.02+5000);
+  if(total<=50000000) return Math.round((total-10000000)*0.015+203000);
+  if(total<=100000000) return Math.round((total-50000000)*0.01+803000);
+  if(total<=300000000) return Math.round((total-100000000)*0.005+1303000);
+  if(total<=500000000) return Math.round((total-300000000)*0.003+2303000);
+  if(total<=1000000000) return Math.round((total-500000000)*0.002+2903000);
+  return 3903000;
+}
+
+function handleEnter(e){if(e.key==='Enter'){calc();}}
+
+function formatNumberInput(e){
+  const v=e.target.value.replace(/[^0-9]/g,'');
+  if(!v){e.target.value='';return;}
+  e.target.value=comma(v);
+}
+
+document.getElementById('price').addEventListener('input',formatNumberInput);
+document.getElementById('price').addEventListener('keydown',handleEnter);
+document.getElementById('people').addEventListener('keydown',handleEnter);
+document.getElementById('objects').addEventListener('keydown',handleEnter);
+document.getElementById('calcBtn').onclick=calc;
+
+function calc(){
+  const priceMan=Number(document.getElementById('price').value.replace(/,/g,''));
+  if(!priceMan){alert('낙찰가 입력');return;}
+  const total=priceMan*10000;
+  const people=Number(document.getElementById('people').value||0);
+  const objects=Number(document.getElementById('objects').value||0);
+
+  const delivery=(people+3)*10*5500;
+  const registryFee=objects*4000;
+  const appraisal=calcAppraisal(total);
+  const survey=70000;
+  const newspaper=220000;
+  const auctionFee=calcAuctionFee(total);
+
+  const applySub=delivery+registryFee;
+  const appraisalSub=appraisal.sum;
+  const depositSub=survey+newspaper+auctionFee;
+  const sum=applySub+appraisalSub+depositSub;
+
+  document.getElementById('result').innerHTML=`
+  <tr class='group-apply'><td>송달료</td><td>${comma(delivery)} 원</td></tr>
+  <tr class='group-apply'><td>등기신청수수료</td><td>${comma(registryFee)} 원</td></tr>
+  <tr class='subtotal group-apply'><td>신청비용 소계</td><td>${comma(applySub)} 원</td></tr>
+
+  <tr class='group-appraisal'><td>감정평가수수료</td><td>${comma(appraisal.fee)} 원</td></tr>
+  <tr class='group-appraisal'><td>감정평가 실비</td><td>${comma(appraisal.expense)} 원</td></tr>
+  <tr class='group-appraisal'><td>부가가치세</td><td>${comma(appraisal.vat)} 원</td></tr>
+  <tr class='subtotal group-appraisal'><td>감정료 소계</td><td>${comma(appraisalSub)} 원</td></tr>
+
+  <tr class='group-deposit'><td>현황조사수수료</td><td>${comma(survey)} 원</td></tr>
+  <tr class='group-deposit'><td>신문공고료</td><td>${comma(newspaper)} 원</td></tr>
+  <tr class='group-deposit'><td>매각수수료</td><td>${comma(auctionFee)} 원</td></tr>
+  <tr class='subtotal group-deposit'><td>예납금 소계</td><td>${comma(depositSub)} 원</td></tr>
+
+  <tr class='total'><td>총 경매비용</td><td>${comma(sum)} 원</td></tr>`;
+};
+</script>
+</body>
+</html>
