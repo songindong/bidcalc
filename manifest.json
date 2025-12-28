@@ -2,6 +2,7 @@
   "name": "자유로 경매 NPL",
   "short_name": "경매NPL",
   "start_url": "/bidcalc/",
+  "scope": "/bidcalc/",
   "display": "standalone",
   "background_color": "#1E88E5",
   "theme_color": "#1E88E5",
