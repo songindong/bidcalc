@@ -93,6 +93,70 @@
 </div>
 
 <script>
+function toggleLaw(id){
+  const el = document.getElementById(id);
+  el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+}
+
+function comma(x){
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function formatNumberInput(e){
+  const v = e.target.value.replace(/[^0-9]/g,'');
+  e.target.value = v ? comma(v) : '';
+}
+
+function handleEnter(e){
+  if(e.key === 'Enter') calc();
+}
+
+function calc(){
+  const priceMan = Number(
+    document.getElementById('price').value.replace(/,/g,'')
+  );
+  if(!priceMan){
+    alert('낙찰가를 입력하세요');
+    return;
+  }
+
+  const people = Number(document.getElementById('people').value || 0);
+  const objects = Number(document.getElementById('objects').value || 0);
+
+  const delivery = (people + 3) * 10 * 5500;
+  const registry = objects * 4000;
+
+  const survey = 70000;
+  const newspaper = 220000;
+  const auction = 3903000; // 상한 예시
+
+  const applySub = delivery + registry;
+  const depositSub = survey + newspaper + auction;
+  const total = applySub + depositSub;
+
+  document.getElementById('result').innerHTML = `
+    <tr class="group-apply"><td>송달료</td><td>${comma(delivery)} 원</td></tr>
+    <tr class="group-apply"><td>등기신청수수료</td><td>${comma(registry)} 원</td></tr>
+    <tr class="subtotal group-apply"><td>신청비용 소계</td><td>${comma(applySub)} 원</td></tr>
+
+    <tr class="group-deposit"><td>현황조사수수료</td><td>${comma(survey)} 원</td></tr>
+    <tr class="group-deposit"><td>신문공고료</td><td>${comma(newspaper)} 원</td></tr>
+    <tr class="group-deposit"><td>매각수수료</td><td>${comma(auction)} 원</td></tr>
+    <tr class="subtotal group-deposit"><td>예납금 소계</td><td>${comma(depositSub)} 원</td></tr>
+
+    <tr class="total"><td>총 경매비용</td><td>${comma(total)} 원</td></tr>
+  `;
+}
+
+/* 이벤트 바인딩 */
+const priceEl = document.getElementById('price');
+priceEl.addEventListener('input', formatNumberInput);
+priceEl.addEventListener('keydown', handleEnter);
+document.getElementById('people').addEventListener('keydown', handleEnter);
+document.getElementById('objects').addEventListener('keydown', handleEnter);
+document.getElementById('calcBtn').addEventListener('click', calc);
+
+/* 기존 SW 등록 유지 */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function () {
     navigator.serviceWorker.register('./sw.js');
